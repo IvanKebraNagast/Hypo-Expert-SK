@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hypo-Expert SK</title>
+
+<!-- ODKAZ NA VAŠU KONKRÉTNU IKONU -->
+<link rel="apple-touch-icon" href="IMG_1650.png">
+
+<!-- Nastavenia pre režim webovej aplikácie -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<style>
+:root {
+  --primary: #1d4ed8;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-light: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 16px;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.result-hero {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.installment-value {
+  font-size: 48px;
+  font-weight: 900;
+  display: block;
+}
+
+.badge {
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.ok { background: var(--success); }
+.warn { background: var(--warning); }
+.fail { background: var(--danger); }
+
+.accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.details-content {
+  display: none;
+  margin-top: 10px;
+}
+
+.details-content.show {
+  display: block;
+}
+
+.box {
+  background: #f1f5f9;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.stress-box {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <header>
+    <h1>Hypo-Expert SK</h1>
+    <p style="color:var(--text-light)">Hypotekárny poradca podľa pravidiel NBS</p>
+  </header>
+
+  <div class="card grid">
+    <div class="input-group">
+      <label>Cena nehnuteľnosti (€)</label>
+      <input id="price" type="number">
+    </div>
+    <div class="input-group">
+      <label>Suma úveru (€)</label>
+      <input id="loan" type="number">
+    </div>
+    <div class="input-group">
+      <label>Úrok (%)</label>
+      <input id="rate" type="number" step="0.1">
+    </div>
+    <div class="input-group">
+      <label>Splatnosť (roky)</label>
+      <input id="years" type="number">
+    </div>
+    <div class="input-group">
+      <label>Čistý mesačný príjem (€)</label>
+      <input id="income" type="number">
+    </div>
+    <div class="input-group">
+      <label>Počet detí</label>
+      <input id="children" type="number">
+    </div>
+  </div>
+
+  <div class="result-hero">
+    <div>
+      <span style="opacity:0.8; font-size:14px; text-transform:uppercase">Mesačná splátka</span>
+      <span class="installment-value" id="installment">0 €</span>
+    </div>
+    <div id="status" class="badge">—</div>
+  </div>
+
+  <div class="card">
+    <button class="accordion-trigger" onclick="toggleDetails()">
+      Detailný matematický rozklad
+      <span id="arrow">▼</span>
+    </button>
+
+    <div id="details" class="details-content">
+      
+      <h4 style="margin:15px 0 5px 0; font-size:13px; color:var(--primary)">KROK 1 – LTV & DTI</h4>
+      <div class="box" id="step1">Zadajte údaje pre výpočet...</div>
+
+      <h4 style="margin:15px 0 5px 0; font-size:13px; color:var(--primary)">KROK 2 – DSTI (VOĽNÝ PRÍJEM)</h4>
+      <div class="box" id="step2">Zadajte údaje pre výpočet...</div>
+
+      <h4 style="margin:15px 0 5px 0; font-size:13px; color:var(--primary)">SPLÁTKA – ÚROK A ISTINA</h4>
+      <div class="box" id="installmentBreakdown">Zadajte údaje pre výpočet...</div>
+
+      <div class="stress-box" id="stress">Zadajte údaje pre výpočet stresového testu.</div>
+    </div>
+  </div>
+
+  <footer>
+    Vzdelávací nástroj · Životné minimum 2024/2025<br>
+    Pre pridanie na plochu iPhonu kliknite v Safari na <strong>Zdieľať</strong> a <strong>Pridať na domovskú obrazovku</strong>.
+  </footer>
+</div>
+
+<script>
+const MIN_ADULT = 273.99;
+const MIN_CHILD = 125.05;
+const RESERVE_FACTOR = 0.40;
+
+const installmentBreakdown = document.getElementById("installmentBreakdown");
+const step1 = document.getElementById("step1");
+const step2 = document.getElementById("step2");
+const stress = document.getElementById("stress");
+
+function calc() {
+  const P_raw = document.getElementById('price').value;
+  const L_raw = document.getElementById('loan').value;
+  const rate_raw = document.getElementById('rate').value;
+  const years_raw = document.getElementById('years').value;
+  const income_raw = document.getElementById('income').value;
+  const children_raw = document.getElementById('children').value;
+
+  if (!L_raw || !rate_raw || !years_raw) {
+    document.getElementById('installment').textContent = "0 €";
+    const statusEl = document.getElementById('status');
+    statusEl.className = "badge";
+    statusEl.textContent = "—";
+    
+    step1.innerHTML = "Zadajte údaje pre výpočet...";
+    step2.innerHTML = "Zadajte údaje pre výpočet...";
+    installmentBreakdown.innerHTML = "Zadajte údaje pre výpočet...";
+    stress.innerHTML = "Zadajte údaje pre výpočet stresového testu.";
+    return;
+  }
+
+  const P = parseFloat(P_raw) || 0;
+  const L = parseFloat(L_raw) || 0;
+  const rateVal = parseFloat(rate_raw) || 0;
+  const r = (rateVal / 100) / 12;
+  const yearsVal = parseFloat(years_raw) || 0;
+  const n = yearsVal * 12;
+  const I = parseFloat(income_raw) || 0;
+  const c = parseInt(children_raw) || 0;
+
+  let inst = 0;
+  if (r > 0 && n > 0) {
+    inst = (L * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  } else if (n > 0) {
+    inst = L / n;
+  }
+  
+  document.getElementById('installment').textContent = Math.round(inst).toLocaleString('sk-SK') + " €";
+
+  const monthlyInterest = L * r;
+  const monthlyPrincipal = inst - monthlyInterest;
+  const totalInterest = inst * n - L;
+
+  installmentBreakdown.innerHTML = `
+    Mesačná splátka: <b>${inst.toFixed(2)} €</b><br>
+    &emsp;– Úrok prvý mesiac: ${monthlyInterest.toFixed(2)} €<br>
+    &emsp;– Istina prvý mesiac: ${monthlyPrincipal.toFixed(2)} €<br>
+    Celkový úrok za ${yearsVal} rokov: <b>${totalInterest.toFixed(2)} €</b><br>
+    Spolu zaplatíte: <b>${(inst * n).toFixed(2)} €</b>
+  `;
+
+  const annualIncome = I * 12; 
+  const dtiLimitValue = annualIncome * 8; 
+  const actualDti = L; 
+  const ltvVal = P > 0 ? (L / P * 100).toFixed(1) : "0.0";
+
+  step1.innerHTML = `
+    <b>LTV:</b> ${L.toLocaleString()} / ${P.toLocaleString()} = <b>${ltvVal}%</b><br>
+    <b>DTI:</b> Ročný príjem: ${annualIncome.toLocaleString()} € × 8 → Max. úver: <b>${dtiLimitValue.toLocaleString()} €</b><br>
+    Požadovaný úver: ${actualDti.toLocaleString()} €<br>
+    Rezerva: <b style="color:${(dtiLimitValue - actualDti) < 0 ? 'red' : 'inherit'}">${(dtiLimitValue - actualDti).toLocaleString()} €</b>
+  `;
+
+  const subs = MIN_ADULT + (c * MIN_CHILD);
+  const free = I - subs;
+  const maxInst = free * (1 - RESERVE_FACTOR);
+
+  step2.innerHTML = `
+    Čistý príjem: ${I.toLocaleString()} €<br>
+    − Životné minimum: ${subs.toFixed(2)} €<br>
+    = Voľný príjem: ${free.toFixed(2)} €<br>
+    × 60% (DSTI limit): <b>${Math.max(0, maxInst).toFixed(2)} €</b> (Max. splátka)
+  `;
+
+  const stressRate = ((rateVal + 2) / 100) / 12;
+  let stressInst = 0;
+  if (stressRate > 0 && n > 0) {
+    stressInst = (L * stressRate * Math.pow(1 + stressRate, n)) / (Math.pow(1 + stressRate, n) - 1);
+  }
+
+  stress.innerHTML = `
+    <b>Stress test (+2 % úrok)</b><br>
+    Stresová splátka: <b>${Math.round(stressInst)} €</b><br>
+    Limit banky (DSTI): ${Math.max(0, maxInst).toFixed(0)} €<br>
+    ${stressInst > maxInst ? '<span style="color:var(--danger)">⚠ Neprešli ste stresovým testom!</span>' : '<span style="color:var(--success)">✓ Stresový test v poriadku.</span>'}
+  `;
+
+  let st = "ok";
+  if (income_raw) {
+    if (inst > maxInst || actualDti > dtiLimitValue || free <= 0) {
+      st = "fail";
+    } else if (maxInst - inst < (maxInst * 0.15) || stressInst > maxInst) {
+      st = "warn";
+    }
+  }
+
+  const statusEl = document.getElementById('status');
+  statusEl.className = "badge " + st;
+  statusEl.textContent = st === "ok" ? "Bezpečné" : st === "warn" ? "Na hrane" : "Nepriechodné";
+}
+
+function toggleDetails() {
+  const details = document.getElementById('details');
+  const arrow = document.getElementById('arrow');
+  details.classList.toggle('show');
+  arrow.textContent = details.classList.contains('show') ? "▲" : "▼";
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', calc);
+});
+
+calc();
+</script>
+
+</body>
+</html>
+
